@@ -5,7 +5,7 @@ std_path = None
 import io_pack as io
 import sys
 
-__version__ = '0.9.3'
+__version__ = '0.9.7'
 
 
 def erase(n):  # https://www.quora.com/How-can-I-delete-the-last-printed-line-in-Python-language
