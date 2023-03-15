@@ -14,7 +14,7 @@ import io_pack as io
 from ypp_filetype import YPP
 
 
-__version__ = '1.4'
+__version__ = '1.5'
 colibri.Style.UNDERLINE = "\033[4m"
 colibri.CURSOR_UP_ONE = '\x1b[1A'
 colibri.ERASE_LINE = '\x1b[2K'
@@ -41,7 +41,7 @@ class PackageInstaller:
                         msg="Connection could NOT be established",
                         cause=["Server could not be reached"],
                         fix=["Check your internet connection",
-                             "Maybe update Yupiter"]
+                             "Update Nexus (PaM)"]
                         )
 
     def _server_refused(self):
@@ -61,7 +61,7 @@ class PackageInstaller:
         if response == b'1':
             sys.stdout.write('\r                                                                     ')
             sys.stdout.write(f'\r{colibri.Fore.LIGHTGREEN_EX}Connected to '
-                             f'{colibri.Style.BRIGHT}PAM-Server {colibri.Style.RESET_ALL}         \n')
+                             f'{colibri.Style.BRIGHT}Nexus-Server {colibri.Style.RESET_ALL}         \n')
         elif response == b'0':
             self._server_refused()
         else:
@@ -125,7 +125,9 @@ def install(i):
         o = _.output
     if not _.active:
         _.active = True
-        pam_make("PAM-Server")
+        tb = pam_make("Nexus-Server")
+        if tb == 1:
+            return
     if not pam.exists(i):
         xsErrors.stderr(11, msg=f"Package [{i}] does not exist on server")
         return 0
@@ -222,6 +224,10 @@ def argsparser(args):
     parser.add_argument("output", calls=["-o", "--output"], input_=True)
 
     options = parser()
+    return options
+
+
+def _main(options):
     options_l = options.keys()
     if "local" in options_l:
         _.local = True
@@ -248,17 +254,20 @@ def _pam_init_():
 
 
 def pam_make(servername):
-    logger.add(f"Connection make : PAM-server")
+    logger.add(f"Connection make : Nexus-Server")
     sys.stdout.write(f'\r{colibri.Fore.CYAN}Establishing connection to {servername}{colibri.Fore.RESET}\n')
     p2 = threading.Thread(target=_pam_init_)
     p2.start()
     while "pam" not in globals().keys():
         if _.failed:
-            sys.exit()
+            p2.join()
+            return 1
+    return 0
 
 
 def main(args):
-    argsparser(args)
+    args = argsparser(args)
+    _main(args)
 
 
 def find_installation(name):
