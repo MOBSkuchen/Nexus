@@ -1,4 +1,4 @@
-  &boldManual&under => man
+  &boldManual&reset => man
     &underArguments&reset
      %magentaname&reset  : The manual page name, can be one of:
              command-name, API-name

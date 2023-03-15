@@ -12,7 +12,7 @@
     to implement a main(args) function. This is where execution
     begins. This function may NOT call other functions. Instead,
     use the context class as shown below:
-                                          ctx.<func>()
+                                          ctx.$yellow<func>&reset()
 
     The reason for this is that NXPY just executes the code and
     only saves the locals to ctx.
