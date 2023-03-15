@@ -1,0 +1,10 @@
+  &boldRemove directory&reset => rmdir
+
+     &underArguments&reset
+      *dirname   : The directory to be removed,
+                   formatted to a single name.
+
+    &underDescription&reset
+    Remove a directory.
+    The directory may be filled with
+    files and subdirectories.

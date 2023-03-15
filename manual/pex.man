@@ -1,0 +1,22 @@
+  &boldPython-Extension execute&reset => pex
+
+     &underArguments&reset
+     -c / --cached  : Get all cached files,
+                      cached files are previously run files with
+                      their dependencies already saved for faster
+                      loading.
+
+     -d / --drop    : Drop (remove) all saved locals for a
+       <name>         loaded file.
+
+     -e / --execute : Executes a PY-Ext using the NXPY API
+       <filename>     [SEE : man NXPY]
+
+     -n / --new     : Create a new project / file with
+       <name>         the standard template [SEE : man std-template.py]
+
+    &underDescription&reset
+    API for running / testing python extensions with the NXPY,
+
+    a runnable file must include a main function with 1 argument
+    (args), use ctx.<func> to access builtin functions [SEE : man NXPY].

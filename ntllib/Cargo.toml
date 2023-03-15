@@ -1,0 +1,15 @@
+[package]
+name = "ntllib"
+version = "0.2.5"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "ntllib"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = "0.18.1"
+regex = "1.7.1"
+glob = "0.3.1"
+walkdir = "2.3.2"

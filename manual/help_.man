@@ -1,0 +1,6 @@
+  &boldHelp&reset => help
+
+    &underDescription&reset
+    Gets the standard help message,
+    The help page is formatted like manual page
+    with subtitles formatted like tables.

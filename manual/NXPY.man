@@ -1,0 +1,26 @@
+  &boldNexus-Python&reset => NXPY
+
+    &underDescription&reset
+    NXPY is the API used for python extensions,
+    built on-top of python. It's purpose is to give
+    easy and seamless access to Nexus core functions.
+    And thus to create a seamless integratio for
+    PY-EXTs.
+
+    &underUsage&reset
+    Using NXPY is roughly the same as python, but you need
+    to implement a main(args) function. This is where execution
+    begins. This function may NOT call other functions. Instead,
+    use the context class as shown below:
+                                          ctx.<func>()
+
+    The reason for this is that NXPY just executes the code and
+    only saves the locals to ctx.
+
+    But ctx also has builtin functions for calling the Nexus libraries
+    and other files.
+
+    get_lib(libname)  ->  Imports a Nexus-core library
+    get_pkg(pkg_name) ->  Get a file(path) within the directory of
+                          the PY-EXT
+    imp(_name)        ->  Import a PY-EXT from a filepath

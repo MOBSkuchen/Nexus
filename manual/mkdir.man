@@ -1,0 +1,8 @@
+  &boldMake directory&reset => mkdir
+
+     &underArguments&reset
+      *dirname   : The directory to be created,
+                   formatted to a single name.
+
+    &underDescription&reset
+    Create a directory.
