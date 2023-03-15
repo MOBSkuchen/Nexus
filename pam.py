@@ -254,7 +254,7 @@ def _pam_init_():
 
 
 def pam_make(servername):
-    logger.add(f"Connection make : Nexus-Server")
+    logger.add(f"Making connection to Nexus-Server")
     sys.stdout.write(f'\r{colibri.Fore.CYAN}Establishing connection to {servername}{colibri.Fore.RESET}\n')
     p2 = threading.Thread(target=_pam_init_)
     p2.start()
