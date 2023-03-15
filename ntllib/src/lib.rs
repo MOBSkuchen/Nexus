@@ -1,7 +1,7 @@
 use std::fs;
 use pyo3::prelude::*;
 extern crate glob;
-use glob::glob;
+use regex::Regex;
 extern crate walkdir;
 use walkdir::WalkDir;
 
@@ -9,7 +9,7 @@ use walkdir::WalkDir;
 fn _filesize(path: String) -> usize {
     let x = match fs::read(path) {
         Ok(val) => val,
-        Err(err) => return 0,
+        Err(_err) => return 0,
     };
 
     return x.len();
@@ -21,7 +21,7 @@ fn file_get(path: String) -> PyResult<Vec<u8>> {
     let empty: Vec<u8> = Vec::new();
     let x = match fs::read(path) {
         Ok(val) => val,
-        Err(err) => return Ok(empty),
+        Err(_err) => return Ok(empty),
     };
     return Ok(x);
 }
@@ -32,7 +32,7 @@ fn file_search(path: String, pattern: String) -> PyResult<Vec<Vec<usize>>> {
     let empty: Vec<Vec<usize>> = Vec::new();
     let content = match fs::read_to_string(path) {
         Ok(val)  => val,
-        Err(err) => return Ok(empty),
+        Err(_err) => return Ok(empty),
     };
     let re = Regex::new(&pattern).unwrap();
     let m = re.find_iter(&content);
@@ -60,7 +60,7 @@ fn rec_ld(path: String) -> PyResult<Vec<String>> {
 }
 
 #[pyclass]
-struct rec_path_ret_val {
+struct RecPathRV {
     #[pyo3(get)]
     name: String,
     #[pyo3(get)]
@@ -68,21 +68,21 @@ struct rec_path_ret_val {
 }
 
 #[pyfunction]
-fn rec_path_search(path: String, pattern: String) -> PyResult<Vec<rec_path_ret_val>> {
-    let mut ret: Vec<rec_path_ret_val> = Vec::new();
+fn rec_path_search(path: String, pattern: String) -> PyResult<Vec<RecPathRV>> {
+    let mut ret: Vec<RecPathRV> = Vec::new();
     let mut single_path: String;
-    let mut empty: Vec<rec_path_ret_val> = Vec::new();
-    empty.push(rec_path_ret_val {name: "err".to_string(), amount: usize::MAX});
+    let mut empty: Vec<RecPathRV> = Vec::new();
+    empty.push(RecPathRV {name: "err".to_string(), amount: usize::MAX});
     for e in WalkDir::new(path).into_iter().filter_map(|e| e.ok()) {
         if e.metadata().unwrap().is_file() {
             single_path = e.path().to_str().unwrap().to_string();
             let content = match fs::read_to_string(single_path.clone()) {
                 Ok(val)  => val,
-                Err(err) => continue,
+                Err(_err) => continue,
             };
-            let re = Regex::new(&pattern).unwrap();
+            let re: Regex = Regex::new(&pattern).unwrap();
             let m: usize = re.find_iter(&content).count();
-            ret.push(rec_path_ret_val { name: single_path.to_string(), amount: m})
+            ret.push(RecPathRV { name: single_path.to_string(), amount: m})
         }
     }
     return Ok(ret)
@@ -101,7 +101,7 @@ fn rec_size(path: String) -> PyResult<usize> {
 
 #[pyfunction]
 fn version() -> PyResult<String> {
-    Ok("0.2.5".to_string())
+    Ok("0.2.6".to_string())
 }
 
 #[pymodule]
@@ -114,5 +114,3 @@ fn ntllib(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(rec_size, m)?)?;
     Ok(())
 }
-
-fn main() {}
