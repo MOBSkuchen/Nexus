@@ -40,7 +40,7 @@ def parse_inputs(inputs, _input):
             inputs = []  # not necessary, lol
         else:
             _adder = inputs.pop(0)
-        cmd = "access_" + _adder
+        cmd = "access_" + _adder  # This is to protect other functions
         optionloader.prt_ctx = cmd[7:len(cmd)]
         ctx = cmd
         func = getattr(xsCmds, cmd, command_not_found)
@@ -134,7 +134,9 @@ def bootstrap(pa):
 
 
 def main(pa):
+    import traceback
     try:
+        import_all()
         bootstrap(pa)
     except KeyboardInterrupt:
         xsErrors.sys_exit(0)
@@ -145,10 +147,15 @@ def main(pa):
     except Exception as ex:
         if xsErrors.debug:
             raise ex
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        filename = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        tb = ex.__traceback__
+        while tb.tb_next:
+            tb = tb.tb_next
+        filename = tb.tb_frame.f_code.co_filename.replace("\\", "/").split("/")
+        filename = filename[len(filename) - 1]
+        lineno = tb.tb_lineno
+        name = tb.tb_frame.f_code.co_name
         io.output(
-            f'{colibri.Style.UNDERLINE}Internal error, please open an issue with the following traceback{colibri.Style.RESET_ALL} :\nIn {filename} at line {exc_tb.tb_lineno}: \n{ex.with_traceback(None)}')
+            f'{colibri.Style.UNDERLINE}Internal error, please open an issue with the following traceback{colibri.Style.RESET_ALL} :\nIn {filename}::{name} [{lineno}]: \n{ex.with_traceback(None)}')
         io.output('=' * 30)
 
 
