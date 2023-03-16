@@ -1,0 +1,16 @@
+  &boldManual&reset => man
+    &underArguments&reset
+     %magentaname&reset  : The manual page name, can be one of:
+             command-name, API-name
+
+    &underDescription&reset
+    Get a manual / extra help for a command or API.
+    A manual provides a description, arguments,
+    metadata (for NXPY).
+
+    &underMeta&reset
+    Found in main.py->[help_func]
+
+    Implements: Callable: help_func(args)
+
+    Imports : Internal: utils, colibri

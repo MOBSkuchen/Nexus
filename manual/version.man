@@ -1,0 +1,5 @@
+  &boldVersion&reset => version
+
+    &underDescription&reset
+    Returns current versions, for the following APIs:
+    Nexus, PaM, Paramiko, Python, NTL, PEx

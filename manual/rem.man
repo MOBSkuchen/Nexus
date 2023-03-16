@@ -1,0 +1,9 @@
+  &boldRemove&reset => rem
+
+     &underArguments&reset
+      *filename  : The file to be removed,
+                   formatted to a single file.
+
+    &underDescription&reset
+    Delete a file, you &boldwill&reset be asked
+    if you really want to remove the file.
