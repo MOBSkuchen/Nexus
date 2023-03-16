@@ -92,6 +92,7 @@ def help_func():
         {colibri.Fore.GREEN}purge{colibri.Style.RESET_ALL}     : Remove a certain number of lines
         {colibri.Fore.GREEN}size{colibri.Style.RESET_ALL}      : Get file / directory size
         {colibri.Fore.GREEN}con{colibri.Style.RESET_ALL}       : Search for pattern in files
+        {colibri.Fore.GREEN}
     ''')
 
 
