@@ -133,6 +133,13 @@ def bootstrap(pa):
     create_interface()
 
 
+def send_report(content):
+    from pam import NexusServerConnector
+    nsc = NexusServerConnector()
+    nsc.report(content)
+    del nsc
+
+
 def main(pa):
     import traceback
     try:
@@ -154,9 +161,11 @@ def main(pa):
         filename = filename[len(filename) - 1]
         lineno = tb.tb_lineno
         name = tb.tb_frame.f_code.co_name
-        io.output(
-            f'{colibri.Style.UNDERLINE}Internal error, please open an issue with the following traceback{colibri.Style.RESET_ALL} :\nIn {filename}::{name} [{lineno}]: \n{ex.with_traceback(None)}')
-        io.output('=' * 30)
+        _tb = ex.with_traceback(None)
+        content = f'{colibri.Style.UNDERLINE}Internal error, please open an issue with the following traceback{colibri.Style.RESET_ALL} :\nIn {filename}::{name} [{lineno}]: \n{_tb}'
+        send_report(content)  # Send internal error report to Nexus-Server
+        io.output(content)
+        io.output('=' * len(_tb))
 
 
 if __name__ == '__main__':

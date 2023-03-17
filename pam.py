@@ -14,14 +14,14 @@ import io_pack as io
 from ypp_filetype import YPP
 
 
-__version__ = '1.5'
+__version__ = '1.6'
 colibri.Style.UNDERLINE = "\033[4m"
 colibri.CURSOR_UP_ONE = '\x1b[1A'
 colibri.ERASE_LINE = '\x1b[2K'
-addr = ('suprime.sonvogel.com', 25582)
+addr = ('suprime.sonvogel.com', 25583)
 
 
-class PackageInstaller:
+class NexusServerConnector:
     def __init__(self, _addr=addr):
         self.pkg_size = 10240
         self.addr = _addr
@@ -34,6 +34,9 @@ class PackageInstaller:
         # ========================
 
         self._contact()
+
+    def __del__(self):
+        self.connection.close()
 
     def _server_dead(self):
         _.failed = 9
@@ -66,6 +69,11 @@ class PackageInstaller:
             self._server_refused()
         else:
             self._server_dead()
+
+    def report(self, content: str):
+        self.connection.send(b'4')
+        self.connection.recv(1)
+        self.connection.send(content.encode())
 
     def list(self, pattern):
         self.connection.send(b'1')
@@ -250,7 +258,7 @@ def _main(options):
 
 def _pam_init_():
     global pam
-    pam = PackageInstaller(addr)
+    pam = NexusServerConnector(addr)
 
 
 def pam_make(servername):

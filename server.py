@@ -1,3 +1,4 @@
+import datetime
 import socket
 import sys
 import threading as tr
@@ -6,7 +7,7 @@ import threading
 import time
 from glob import glob
 
-addr = ('suprime.sonvogel.com', 25580)
+addr = ('suprime.sonvogel.com', 25583)
 
 
 def format_addr(_addr):
@@ -18,6 +19,7 @@ class Interpreter:
         self.con = con
         self.pam = PackageManager()
         self.pkg_size = 1024
+        self._dt = datetime.datetime
 
         while True:
             self._check()
@@ -34,12 +36,27 @@ class Interpreter:
             case "3":
                 self.send()
             case "4":
-                self.send()
+                self.get_report()
 
     def send(self):
         self.con.send(b'1')
         name = self.con.recv(100).decode()
         self.send_file(name)
+
+    def _get_time(self, fmt):
+        return self._dt.now().strftime(fmt)
+
+    def _get_session_name(self):
+        basename = os.path.join("reports", self._get_time("internal-%d.%m.%y-%M-%S-%f.report"))
+        return basename
+
+    def get_report(self):
+        self.con.send(b'1')
+        report = self.con.recv(1024)
+        self.con.send(b'1')
+        with open(f'reports/{self._get_session_name()}', 'wb') as file:
+            file.write(report)
+        print(f'Got report from {self.con.getsockname()}')
 
     def greet(self):
         self.con.send(b'1')  # Accept connection
