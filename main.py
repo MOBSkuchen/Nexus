@@ -43,7 +43,7 @@ def parse_inputs(inputs, _input):
 
 def create_interface():
     from options import init_manualloader
-    # init_manualloader()
+    init_manualloader()
     while True:
         _input = io.input_gather()
         inputs = _input.split()
@@ -132,7 +132,9 @@ def main(pa):
     try:
         bootstrap(pa)
     except KeyboardInterrupt:
-        xsErrors.sys_exit(0)
+        xsErrors.sys_exit(0, lc=True)
+    except EOFError:
+        xsErrors.sys_exit(0, lc=True)
     except PermissionError as ex:
         if xsErrors.debug:
             raise ex

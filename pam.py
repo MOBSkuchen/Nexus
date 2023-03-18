@@ -70,39 +70,32 @@ class NexusServerConnector:
         elif response == b'0':
             self._server_refused()
         else:
-            print(response)
-            print(response)
-            print(response)
             self._server_dead()
 
     def get_manual(self, name):
         self.connection.send(b'5')
-        self.connection.recv(1)
         self.connection.send(name.encode())
-        return self.connection.recv(2048)
+        content = self.connection.recv(2048)
+        return content
 
     def list_manuals(self, pattern):
         self.connection.send(b'6')
-        self.connection.recv(1)
         self.connection.send(pattern.encode())
         response = self.connection.recv(1024).decode().split(";")
         return response
 
     def report(self, content: str):
         self.connection.send(b'4')
-        self.connection.recv(1)
         self.connection.send(content.encode())
 
     def list(self, pattern):
         self.connection.send(b'1')
-        self.connection.recv(1)
         self.connection.send(pattern.encode())
         response = self.connection.recv(100).decode().split(";")
         return response
 
     def exists(self, name):
         self.connection.send(b'2')
-        self.connection.recv(1)
         self.connection.send(name.encode("utf-8"))
         response = self.connection.recv(1).decode()
         return response == "1"
@@ -118,9 +111,9 @@ class NexusServerConnector:
 
     def download(self, filename, name):
         self.connection.send(b'3')
-        self.connection.recv(1)
+        # self.connection.recv(1)
         self.connection.send(name.encode())
-        self.connection.recv(3)  # After 2 hours of debugging, this fixes it for some reason
+        # self.connection.recv(3)  # After 2 hours of debugging, this fixes it for some reason
         size = int(self.connection.recv(100).decode())
         self.connection.send(b'1')
         s_ = sizeof_fmt(size)
@@ -153,44 +146,60 @@ class NexusServerConnector:
                 if not filewriter.closed:
                     filewriter.close()
                 return 0
-            if not filewriter.closed:
-                filewriter.close()
+        if not filewriter.closed:
+            filewriter.close()
 
 
 def make_path(file):
     return os.path.join(optionloader.make_path(optionloader.directories[0]), file) if not _.local else file
 
 
+def reset():
+    global _
+
+    class _:
+        failed = False
+        custom = False
+        local = False
+        output = None
+        active = False
+
+
 def custom_download(url, path):
-    with requests.get(url, stream=True) as r:
-        with open(path, 'wb') as filewriter:
-            try:
-                if "Content-Length" not in r.headers:
-                    xsErrors.stderr(23, msg=f"Invalid headers ('Content-Length' not in headers)",
-                                    cause=["The URL headers do not include 'Content-Length' and thus are invalid"],
-                                    fix=["Provide a downloadable URL"])
-                    filewriter.close()
+    try:
+        with requests.get(url, stream=True) as r:
+            with open(path, 'wb') as filewriter:
+                try:
+                    if "Content-Length" not in r.headers:
+                        xsErrors.stderr(23, msg=f"Invalid headers ('Content-Length' not in headers)",
+                                        cause=["The URL headers do not include 'Content-Length' and thus are invalid"],
+                                        fix=["Provide a downloadable URL"])
+                        filewriter.close()
+                        return 0
+                    size = int(r.headers.get('Content-Length'))
+                    io.output(
+                        f'{colibri.Fore.LIGHTWHITE_EX}Downloading package{colibri.Fore.RESET} [{url} - {sizeof_fmt(size)}] to {fmt_file(path)}')
+                    for i, chunk in enumerate(r.iter_content(chunk_size=pkg_size)):
+                        cur = i * pkg_size
+                        filewriter.write(chunk)
+                        NexusServerConnector.show(cur, size)
+                        time.sleep(.1)
+                        sys.stdout.flush()
+                except KeyboardInterrupt:
+                    io.output(
+                        f'{colibri.Fore.RED}Connection closed due to interrupt{colibri.Fore.RESET}                                    ')
+                    if not filewriter.closed:
+                        filewriter.close()
                     return 0
-                size = int(r.headers.get('Content-Length'))
-                io.output(
-                    f'{colibri.Fore.LIGHTWHITE_EX}Downloading package{colibri.Fore.RESET} [{url} - {sizeof_fmt(size)}] to {fmt_file(path)}')
-                for i, chunk in enumerate(r.iter_content(chunk_size=pkg_size)):
-                    cur = i * pkg_size
-                    filewriter.write(chunk)
-                    NexusServerConnector.show(cur, size)
-                    time.sleep(.1)
-                    sys.stdout.flush()
-            except KeyboardInterrupt:
-                io.output(
-                    f'{colibri.Fore.RED}Connection closed due to interrupt{colibri.Fore.RESET}                                    ')
                 if not filewriter.closed:
                     filewriter.close()
-                return 0
-            if not filewriter.closed:
-                filewriter.close()
-        io.output(
-            f'{colibri.ERASE_LINE}{colibri.CURSOR_UP_ONE}{colibri.ERASE_LINE}{colibri.Fore.GREEN}Downloaded package{colibri.Fore.RESET} [{url} - {sizeof_fmt(size)}] to {fmt_file(path)}')
-        logger.add(f"Download finished")
+            io.output(
+                f'{colibri.ERASE_LINE}{colibri.CURSOR_UP_ONE}{colibri.ERASE_LINE}{colibri.Fore.GREEN}Downloaded package{colibri.Fore.RESET} [{url} - {sizeof_fmt(size)}] to {fmt_file(path)}')
+            logger.add(f"Download finished")
+    except:
+        xsErrors.stderr(23, msg=f"Failed to download, bad url", cause=["The supplied URL has an invalid format"],
+                        fix=["Perhaps you confused custom and standard downloads"])
+        return 0
 
 
 def get_url_filename(url):
@@ -341,12 +350,16 @@ def argsparser(args):
 
 def get_manual(name):
     nsc = NexusServerConnector()
-    return nsc.get_manual(name)
+    x = nsc.get_manual(name)
+    reset()
+    return x
 
 
 def list_manuals() -> list[str]:
     nsc = NexusServerConnector()
-    return nsc.list_manuals("*")
+    x = nsc.list_manuals("*")
+    reset()
+    return x
 
 
 def _main(options):
@@ -370,7 +383,7 @@ def _main(options):
                 pkg_size = int(options["size"])
     if "install" in options_l:
         tb = install(options["install"])
-        if "unpack" in options_l and tb:
+        if "unpack" in options_l and tb != 0:
             if "output" in options_l:
                 _.output = options["output"]
             unpack(tb)
@@ -402,6 +415,7 @@ def pam_make(servername):
 def main(args):
     args = argsparser(args)
     _main(args)
+    reset()
 
 
 def find_installation(name):

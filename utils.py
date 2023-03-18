@@ -6,7 +6,7 @@ suppress = False
 import io_pack as io
 import sys
 
-__version__ = '0.9.7'
+__version__ = '1.0.0'
 
 
 def erase(n):  # https://www.quora.com/How-can-I-delete-the-last-printed-line-in-Python-language

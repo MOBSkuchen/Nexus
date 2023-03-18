@@ -4,16 +4,19 @@ import io_pack as io
 
 
 def sys_exit(num, *, lc=False):
-    from logger import logger
-    logger.dump()
-    from utils import clr
-    clr()
-    io.output(f'\r{colibri.Style.NORMAL}Exited with code {colibri.Fore.CYAN}{num}', end="")
-    sys.stdout.write(colibri.Style.RESET_ALL)
-    if not lc:
+    try:
+        from logger import logger
+        logger.dump()
+        from utils import clr
+        clr()
+        io.output(f'\r{colibri.Style.NORMAL}Exited with code {colibri.Fore.CYAN}{num}', end="")
+        sys.stdout.write(colibri.Style.RESET_ALL)
+        if not lc:
+            sys.exit(num)
+        else:
+            exit(num)
+    except:
         sys.exit(num)
-    else:
-        exit(num)
 
 
 alerts = False

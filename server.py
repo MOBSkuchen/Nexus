@@ -27,7 +27,7 @@ class Interpreter:
 
     def _check(self):
         opener = self.con.recv(1).decode()
-        self.con.send(b'1')
+        # self.con.send(b'1')
         match opener:
             case "0":
                 self.greet()
@@ -41,6 +41,8 @@ class Interpreter:
                 self.get_report()
             case "5":
                 self.send_manual()
+            case "6":
+                self.list_manuals()
 
     def send(self):
         name = self.con.recv(100).decode()

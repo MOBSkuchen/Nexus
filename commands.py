@@ -169,7 +169,7 @@ def access_man(params):
                         msg=f"The command 'man' requires {colibri.Fore.CYAN}1{colibri.Fore.RESET} argument!")
         return
     cmd = params.pop(0)
-    if cmd in sys_opts.manualoader.makes.keys():
+    if cmd in sys_opts.manualoader.loadable():
         io.print_out(f"Viewing help for {cmd} :")
         io.output(colibri.format(sys_opts.manualoader[cmd]))
     else:

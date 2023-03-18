@@ -103,19 +103,20 @@ class ManualLoader:
         path = os.path.join(self.path, manual + ".man")
         if not os.path.exists(path):
             with open(path, 'wb') as file:
-                b = self.get_manual(manual)
+                b = self.get_manual(manual + ".man")
                 file.write(b)
-
             return b
 
     def get(self, item):
-        if b:=self.check(item):
+        if b := self.check(item):
             return b.decode()
         path = os.path.join(self.path, item + ".man")
         with open(path, 'rb') as file:
             b = file.read()
-
         return b.decode()
+
+    def loadable(self):
+        return self.manuals
 
     def __getitem__(self, item):
         return self.get(item)
