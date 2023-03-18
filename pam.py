@@ -6,6 +6,7 @@ import sys
 import socket
 import colibri
 import errors as xsErrors
+import requests
 from logger import logger
 import zstandard as zst
 from options import optionloader
@@ -14,15 +15,13 @@ from ypp_filetype import YPP
 from zipfile import ZipFile
 
 __version__ = '1.6'
-colibri.Style.UNDERLINE = "\033[4m"
-colibri.CURSOR_UP_ONE = '\x1b[1A'
-colibri.ERASE_LINE = '\x1b[2K'
+pkg_size = 25000
 addr = ('suprime.sonvogel.com', 25583)
 
 
 class NexusServerConnector:
-    def __init__(self, _addr=addr):
-        self.pkg_size = 25000
+    def __init__(self, _addr=addr, _pkg_size=pkg_size):
+        self.pkg_size = _pkg_size
         self.addr = _addr
         self.connection = socket.socket()
         # self.connection.settimeout(0.5)
@@ -90,11 +89,14 @@ class NexusServerConnector:
         response = self.connection.recv(1).decode()
         return response == "1"
 
-    def show(self, cur, size):  # https://stackoverflow.com/questions/3160699/python-progress-bar
+    @staticmethod
+    def show(cur, size):  # https://stackoverflow.com/questions/3160699/python-progress-bar
         render_size = 40
-        x = int(render_size*cur/size)
-        print(f"{colibri.Fore.LIGHTGREEN_EX}Downloading{colibri.Fore.RESET}: {colibri.Fore.LIGHTBLACK_EX}[{colibri.Fore.RESET}{(colibri.Fore.WHITE + u'█' + colibri.Fore.RESET)*x}{((colibri.Fore.BLACK + u'█' + colibri.Fore.RESET)*(render_size-x))}{colibri.Fore.LIGHTBLACK_EX}]{colibri.Fore.RESET} {sizeof_fmt(cur)}/{sizeof_fmt(size)}     ", end='\r', file=sys.stdout
-              , flush=True)
+        x = int(render_size * cur / size)
+        print(
+            f"{colibri.Fore.LIGHTGREEN_EX}Downloading{colibri.Fore.RESET}: {colibri.Fore.LIGHTBLACK_EX}[{colibri.Fore.RESET}{(colibri.Fore.WHITE + u'█' + colibri.Fore.RESET) * x}{((colibri.Fore.BLACK + u'█' + colibri.Fore.RESET) * (render_size - x))}{colibri.Fore.LIGHTBLACK_EX}]{colibri.Fore.RESET} {sizeof_fmt(cur)}/{sizeof_fmt(size)}     ",
+            end='\r', file=sys.stdout
+            , flush=True)
 
     def download(self, filename, name):
         self.connection.send(b'3')
@@ -105,7 +107,8 @@ class NexusServerConnector:
         self.connection.send(b'1')
         s_ = sizeof_fmt(size)
         logger.add(f"Download package : {name}")
-        io.output(f'{colibri.Fore.LIGHTWHITE_EX}Downloading package{colibri.Fore.RESET} [{name} - {s_}] to {fmt_file(filename)}')
+        io.output(
+            f'{colibri.Fore.LIGHTWHITE_EX}Downloading package{colibri.Fore.RESET} [{name} - {s_}] to {fmt_file(filename)}')
         done = 0
         with open(filename, 'wb') as filewriter:
             try:
@@ -117,7 +120,8 @@ class NexusServerConnector:
                     filewriter.write(data)
                     if got != self.pkg_size:
                         # sys.stdout.write('')
-                        io.output(f'{colibri.ERASE_LINE}{colibri.CURSOR_UP_ONE}{colibri.ERASE_LINE}{colibri.Fore.GREEN}Downloaded package{colibri.Fore.RESET} [{name} - {s_}] to {fmt_file(filename)}')
+                        io.output(
+                            f'{colibri.ERASE_LINE}{colibri.CURSOR_UP_ONE}{colibri.ERASE_LINE}{colibri.Fore.GREEN}Downloaded package{colibri.Fore.RESET} [{name} - {s_}] to {fmt_file(filename)}')
                         logger.add(f"Download finished")
                         self.connection.send(b'1')
                         break
@@ -126,7 +130,8 @@ class NexusServerConnector:
             except KeyboardInterrupt:
                 self.connection.close()
                 logger.add(f"Download interrupted")
-                io.output(f'{colibri.Fore.RED}Connection closed due to interrupt{colibri.Fore.RESET}                                    ')
+                io.output(
+                    f'{colibri.Fore.RED}Connection closed due to interrupt{colibri.Fore.RESET}                                    ')
                 if not filewriter.closed:
                     filewriter.close()
                 return 0
@@ -138,11 +143,59 @@ def make_path(file):
     return os.path.join(optionloader.make_path(optionloader.directories[0]), file) if not _.local else file
 
 
+def custom_download(url, path):
+    with requests.get(url, stream=True) as r:
+        with open(path, 'wb') as filewriter:
+            try:
+                if "Content-Length" not in r.headers:
+                    xsErrors.stderr(23, msg=f"Invalid headers ('Content-Length' not in headers)",
+                                    cause=["The URL headers do not include 'Content-Length' and thus are invalid"],
+                                    fix=["Provide a downloadable URL"])
+                    filewriter.close()
+                    return 0
+                size = int(r.headers.get('Content-Length'))
+                io.output(
+                    f'{colibri.Fore.LIGHTWHITE_EX}Downloading package{colibri.Fore.RESET} [{url} - {sizeof_fmt(size)}] to {fmt_file(path)}')
+                for i, chunk in enumerate(r.iter_content(chunk_size=pkg_size)):
+                    cur = i * pkg_size
+                    filewriter.write(chunk)
+                    NexusServerConnector.show(cur, size)
+                    time.sleep(.1)
+                    sys.stdout.flush()
+            except KeyboardInterrupt:
+                io.output(
+                    f'{colibri.Fore.RED}Connection closed due to interrupt{colibri.Fore.RESET}                                    ')
+                if not filewriter.closed:
+                    filewriter.close()
+                return 0
+            if not filewriter.closed:
+                filewriter.close()
+        io.output(
+            f'{colibri.ERASE_LINE}{colibri.CURSOR_UP_ONE}{colibri.ERASE_LINE}{colibri.Fore.GREEN}Downloaded package{colibri.Fore.RESET} [{url} - {sizeof_fmt(size)}] to {fmt_file(path)}')
+        logger.add(f"Download finished")
+
+
+def get_url_filename(url):
+    fragment_removed = url.split("#")[0]  # keep to left of first #
+    query_string_removed = fragment_removed.split("?")[0]
+    scheme_removed = query_string_removed.split("://")[-1].split(":")[-1]
+    if scheme_removed.find("/") == -1:
+        return "download"
+    bn = os.path.basename(scheme_removed)
+    return bn if bn else "download"
+
+
 def install(i):
     if not _.output:
-        o = i
+        if _.custom:
+            o = get_url_filename(i)
+        else:
+            o = i
     else:
         o = _.output
+    if _.custom:
+        tb = custom_download(i, make_path(o))
+        return make_path(o) if tb != 0 else tb
     if not _.active:
         _.active = True
         tb = pam_make("Nexus-Server")
@@ -242,6 +295,7 @@ def unpack(i):
 
 class _:
     failed = False
+    custom = False
     local = False
     output = None
     active = False
@@ -259,6 +313,7 @@ def argsparser(args):
     parser.add_argument("unpack", calls=["-u", "--unpack"], exclusives=["remove"])
 
     parser.add_argument("local", calls=["-l", "--local"])
+    parser.add_argument("custom", calls=["-c", "--custom"])
     parser.add_argument("output", calls=["-o", "--output"], input_=True, dependencies=["install"])
 
     options = parser()
@@ -273,6 +328,8 @@ def _main(options):
         _.local = True
     if "output" in options_l and "unpack" not in options_l:
         _.output = options["output"]
+    if "custom" in options_l:
+        _.custom = True
     if "install" in options_l:
         tb = install(options["install"])
         if "unpack" in options_l and tb:

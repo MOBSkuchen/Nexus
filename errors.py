@@ -40,7 +40,8 @@ errorDict = {
     19: "ExtensionError",
     20: "LibraryError",
     21: "SupportError",
-    22: "SFTPError"
+    22: "SFTPError",
+    23: "DownloadError"
 }
 
 

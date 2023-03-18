@@ -10,12 +10,21 @@
     -u / --unpack : Automatically unpack after download.
                     Must be used together with install,
                     and must be a file of .zst or .ypp.
-    -l / --local  : Use CurrentWorkingDirectory
+    -l / --local  : Download inside of current dir.
     -o / --output : Download to custom output path.
+        <path>
+    -c / --custom : Download from custom URL,
+                    is intended to be used with
+                    -o / --output. (Otherwise generates
+                    the filename by itself)
 
     &underDescription&reset
     Nexus's Package manager. On default packages are downloaded
     from NexusServer to %APPDATA%/packages/<output>
+
+    When downloading from custom URL, the request must have
+    'Content-Length' in its headers. If not a,
+    DownloadError [23] is raised.
 
     You should use .ypp (YupiterProject) files.
     [SEE : man YPP]
