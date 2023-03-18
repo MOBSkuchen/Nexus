@@ -38,3 +38,7 @@ if __name__ == '__main__':
     unsafe_import()
 else:
     safe_import()
+
+x = ntl.file_get("main.py")
+print(x)
+print(type(x))
