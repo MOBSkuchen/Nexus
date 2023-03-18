@@ -1,3 +1,4 @@
+import copy
 import sys
 import errors as xsErrors
 
@@ -28,18 +29,19 @@ class ArgumentParser:
         self._registered_args = {}
         self._call_map = {}
         self._failed = False
+        self._pos_stack = []
+        self._required = []
 
     def _check_inputs_correctness(self):
-        d = {}
-        x = []
+        dep_table = {}
+        got_args = copy.copy(self._rec_args)
         for arg_name in self._rec_args:
-            x.append(arg_name)
             if arg_name not in self._call_map:
                 continue
             arg_name = self._call_map[arg_name]
             arg = self._registered_args[arg_name]
             if arg["dependencies"]:
-                d[arg_name] = arg["dependencies"]
+                dep_table[arg_name] = arg["dependencies"]
             if arg['input'] and arg_name in self._parsed_args.keys():
                 arg_ = self._parsed_args[arg_name]
                 if arg_ == True:
@@ -49,12 +51,18 @@ class ArgumentParser:
                                            "If your value starts with a '-', it may have been interpreted as a flag"],
                                     fix=["Add a value behind this argument",
                                          "If the second cause is the case, please change the name (value)"])
-        for s in d.keys():
-            b = d[s]
-            for _ in b:
-                if _ in x:
+        for name in dep_table.keys():
+            dependencies = dep_table[name]
+            for depen in dependencies:
+                if depen not in got_args:
                     self._failed = True
-                    xsErrors.stderr(8, msg=f"Argument [{s}] requires {_} to be invoked")
+                    xsErrors.stderr(8, msg=f"Argument [{name}] requires {depen} to be invoked")
+
+        for req in self._required:
+            if req not in self._parsed_args.keys():
+                xsErrors.stderr(8, msg=f"Argument [{req}] is required",
+                                cause=[f"{req} has not been invoked"],
+                                fix=[f"Invoke {req}"])
 
     def __call__(self, *args, **kwargs):
         """
@@ -78,6 +86,10 @@ class ArgumentParser:
             self._parsed_args[nn] = value
             return
         if value not in self._call_map:
+            if self._pos_stack:  # Pos-arg
+                name = self._pos_stack.pop(0)
+                self._parsed_args[name] = value
+                return
             self._failed = True
             xsErrors.stderr(8, msg=f"Argument [{value}] does not exist",
                             cause=["Argument is not under registered args"],
@@ -106,17 +118,19 @@ class ArgumentParser:
         if self._registered_args[name]['action']:
             self._registered_args[name]['action']()
 
-    def add_argument(self, name, calls: list[str], input_: bool = False, exclusives: list[str] = None,
-                     action: callable = None, dependencies: list[str] = None):
+    def add_argument(self, name, calls: list[str] = None, input_: bool = False, exclusives: list[str] = None,
+                     action: callable = None, dependencies: list[str] = None, required: bool = False):
         """
         Add an argument
+        :param required:
         :param dependencies:
         Arguments required in order for this argument to be invoked
         :param name:
         Argument name
         (appears on parsed list as 'name': ...)
         :param calls:
-        Name alias
+        Name aliases. Use None for a
+        positional argument.
         :param input_:
         Wheter or not the argument has an input value attached to it
         :param exclusives:
@@ -130,6 +144,11 @@ class ArgumentParser:
             exclusives = []
         if dependencies is None:
             dependencies = []
+        if calls is None:
+            calls = []
+            self._pos_stack.append(name)
+        if required:
+            self._required.append(name)
         _ = {
             "calls": calls,
             "dependencies": dependencies,
@@ -145,3 +164,7 @@ class ArgumentParser:
     @property
     def failed(self):
         return self._failed
+
+    def doc_gen(self):
+        for argument in self._registered_args:
+            print(argument)
