@@ -6,6 +6,7 @@ from datetime import datetime
 
 class Logger:
     def __init__(self, base_path=std_path, time_fmt="%d.%m.%y/%H:%M:%S"):
+        from options import optionloader
         self.path = os.path.join(base_path, 'logs')
         self.log = []
         self._handle = "nexus-%d.%m.%y-%M-%S-%f.log"
