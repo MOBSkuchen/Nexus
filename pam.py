@@ -14,7 +14,7 @@ import io_pack as io
 from ypp_filetype import YPP
 from zipfile import ZipFile
 
-__version__ = '1.6'
+__version__ = '1.7'
 pkg_size = 25000
 addr = ('suprime.sonvogel.com', 25583)
 
@@ -314,7 +314,8 @@ def argsparser(args):
 
     parser.add_argument("local", calls=["-l", "--local"])
     parser.add_argument("custom", calls=["-c", "--custom"])
-    parser.add_argument("output", calls=["-o", "--output"], input_=True, dependencies=["install"])
+    parser.add_argument("output", calls=["-o", "--output"], input_=True)
+    parser.add_argument("custom_size", calls=["-s", "--custom-size"], input_=True)
 
     options = parser()
     return options
@@ -330,6 +331,15 @@ def _main(options):
         _.output = options["output"]
     if "custom" in options_l:
         _.custom = True
+    if "custom_size" in options_l:
+        global pkg_size
+        if not _.custom:
+            xsErrors.stderr(14, msg=f"Custom-Size may not be used on a Nexus-Package", cause=["Custom-Size invoked without custom"])
+        else:
+            if not options["custom_size"].isnumeric():
+                xsErrors.stderr(14, msg=f"Invalid Custom-Size [{options['custom_size']}]", cause=["Custom-Size must be numeric"])
+            else:
+                pkg_size = int(options["custom_size"])
     if "install" in options_l:
         tb = install(options["install"])
         if "unpack" in options_l and tb:
