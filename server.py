@@ -18,7 +18,7 @@ class Interpreter:
     def __init__(self, con):
         self.con = con
         self.pam = PackageManager()
-        self.pkg_size = 1024
+        self.pkg_size = 25000
         self._dt = datetime.datetime
 
         while True:
@@ -26,6 +26,7 @@ class Interpreter:
 
     def _check(self):
         opener = self.con.recv(1).decode()
+        self.con.send(b'1')
         match opener:
             case "0":
                 self.greet()
@@ -39,7 +40,6 @@ class Interpreter:
                 self.get_report()
 
     def send(self):
-        self.con.send(b'1')
         name = self.con.recv(100).decode()
         self.send_file(name)
 
@@ -72,14 +72,14 @@ class Interpreter:
         self.con.send(b'1' if e else b'0')
 
     def send_file(self, filename):
-        self.con.recv(1)
         size = os.path.getsize(self.pam._make_path(filename))
         self.con.send(str(size).encode())
+        self.con.recv(1)
         with self.pam.get_reader(filename) as file:
             while True:
-                by = file.read(1024)
+                by = file.read(self.pkg_size)
                 self.con.send(by)
-                if len(by) != 1024:
+                if len(by) != self.pkg_size:
                     break
                 time.sleep(0.05)
                 if self.con.recv(1) == b'C':

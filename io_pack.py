@@ -1,6 +1,4 @@
 import sys
-
-import main
 from utils import fmt_file
 import os
 import colibri
@@ -35,7 +33,7 @@ if sys.platform == 'win32':
 elif sys.platform == 'linux':
     # Linux
     home = Path.home()
-    _utils.std_path = home / ".local/share"
+    _utils.std_path = home / "local/share"
 else:
     crit_err(21, "SupportError", msg=f"You OS is not currently supported by Nexus: {sys.platform}")
     sys.exit(21)
@@ -59,7 +57,7 @@ def man_logger(x):
 
 def input_gather():
     from options import optionloader
-    _start = f"{colibri.Fore.LIGHTBLACK_EX}{fmt_file(os.curdir) if optionloader['show-curdir'] else ''} >{colibri.Fore.RESET} "
+    _start = f"{colibri.Fore.LIGHTBLACK_EX}{fmt_file(os.curdir) if optionloader['show-curdir'] else ''}>{colibri.Fore.RESET} "
     _input = input(f'{_start}')
     man_logger(f"User input : {_input}")
     return _input

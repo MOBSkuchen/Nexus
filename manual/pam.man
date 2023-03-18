@@ -13,7 +13,7 @@
     -l / --local  : Use CurrentWorkingDirectory
     -o / --output : Download to custom output path.
 
-    &underDescription%reset
+    &underDescription&reset
     Nexus's Package manager. On default packages are downloaded
     from NexusServer to %APPDATA%/packages/<output>
 

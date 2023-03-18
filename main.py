@@ -1,25 +1,19 @@
 # Version is in utils.py
-import os
+import io_pack as io
+import ntl
+import errors as xsErrors
+import launcher
+import pam
+from options import optionloader
+from utils import __version__
+import commands as xsCmds
+from logger import logger
 import colibri
 import sys
 import paramiko
 import multiprocessing as mp
 
 ctx = None
-
-
-def import_all():
-    global io, xsErrors, launcher, pam, optionloader, __version__, xsCmds, logger, utils, ntl
-    import io_pack as io
-    import ntl
-    import errors as xsErrors
-    import launcher
-    import pam
-    from options import optionloader
-    import utils
-    from utils import __version__
-    import commands as xsCmds
-    from logger import logger
 
 
 def command_not_found(*args):
@@ -98,7 +92,7 @@ def help_func():
 
 
 def debug_func():
-    xsErrors.debug = not xsErrors.debug
+    xsErrors.debug = True
 
 
 suppress_ = False
@@ -123,7 +117,6 @@ def parse_args():
     parser.add_argument("quiet", action=suppress, calls=["--quiet", "-q"])
 
     parser()
-    import_all()
 
 
 def bootstrap(pa):
@@ -141,9 +134,7 @@ def send_report(content):
 
 
 def main(pa):
-    import traceback
     try:
-        import_all()
         bootstrap(pa)
     except KeyboardInterrupt:
         xsErrors.sys_exit(0)
@@ -165,7 +156,7 @@ def main(pa):
         content = f'{colibri.Style.UNDERLINE}Internal error, please open an issue with the following traceback{colibri.Style.RESET_ALL} :\nIn {filename}::{name} [{lineno}]: \n{_tb}'
         send_report(content)  # Send internal error report to Nexus-Server
         io.output(content)
-        io.output('=' * len(_tb))
+        io.output('=' * len(str(_tb)))
 
 
 if __name__ == '__main__':
