@@ -33,7 +33,7 @@ if sys.platform == 'win32':
 elif sys.platform == 'linux':
     # Linux
     home = Path.home()
-    _utils.std_path = home / "local/share"
+    _utils.std_path = os.path.join(home, "nexus")
 else:
     crit_err(21, "SupportError", msg=f"You OS is not currently supported by Nexus: {sys.platform}")
     sys.exit(21)
