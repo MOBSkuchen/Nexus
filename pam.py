@@ -266,6 +266,8 @@ def argsparser(args):
 
 
 def _main(options):
+    if not options:
+        return
     options_l = options.keys()
     if "local" in options_l:
         _.local = True
