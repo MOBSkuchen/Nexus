@@ -10,7 +10,7 @@ from utils import std_path
 class OptionLoader:
     def __init__(self, path=std_path):
         self.path = path
-        self.directories = ["packages", "logs", "manual"]
+        self.directories = ["packages", "logs", "manuals"]
 
         self.prt_ctx = None
 
@@ -90,37 +90,40 @@ class OptionLoader:
             return json.dump(config, file)
 
 
-optionloader = OptionLoader()
-from logger import logger
-import errors as xsErrors
-
-
 class ManualLoader:
     def __init__(self, path):
-        self.makes = {}
-        self.expected = ["man", "version", "NXPY"]
-        self.reals = glob(os.path.join(path, "*.man").replace("\\", "/"))
+        from pam import get_manual, list_manuals
+        self.manuals = list_manuals()
+        self.path = path
+        self.get_manual = get_manual
+        for manual in self.manuals:
+            self.check(manual)
 
-        self.make()
+    def check(self, manual):
+        path = os.path.join(self.path, manual + ".man")
+        if not os.path.exists(path):
+            with open(path, 'wb') as file:
+                b = self.get_manual(manual)
+                file.write(b)
 
-    def file_load(self, path):
-        with open(path, 'r') as file:
-            content = file.read()
-        return content
+            return b
 
-    def make(self):
-        for real in self.reals:
-            self.makes[optionloader.get_filename(real, 4)] = self.file_load(real)
+    def get(self, item):
+        if b:=self.check(item):
+            return b.decode()
+        path = os.path.join(self.path, item + ".man")
+        with open(path, 'rb') as file:
+            b = file.read()
 
-        for i in self.expected:
-            if i not in self.makes:
-                logger.add(f"Unable to load MAN:{i}", "error")
+        return b.decode()
 
     def __getitem__(self, item):
-        try:
-            return self.makes[item]
-        except Exception as ex:
-            xsErrors.internal_error(f"Error while loading config", num=-3)
+        return self.get(item)
 
 
-manualoader = ManualLoader(optionloader.make_path(optionloader.directories[2]))
+optionloader = OptionLoader()
+
+
+def init_manualloader():
+    global manualoader
+    manualoader = ManualLoader(optionloader.make_path(optionloader.directories[2]))

@@ -12,6 +12,7 @@ import logger as sys_logger_pkg
 from ypp_filetype import main as ypp_ft_trigger
 from utils import fmt_file, yes_no, erase as sys_erase, stdout_size as sys_stdout_size, sizeof_fmt
 import os
+from argparser import ArgumentParser
 from pathlib import Path
 from ntl import ntl
 from sftp import main as sftp_main_trigger
@@ -20,17 +21,19 @@ from shutil import rmtree
 
 
 def access_help(params):
-    if len(params) > 0:
-        xsErrors.stdwarning(
-            f"The command 'help' requires {colibri.Fore.CYAN}0{colibri.Fore.RESET} to {colibri.Fore.CYAN}1{colibri.Fore.RESET} argument(s)!")
-
+    ap = ArgumentParser(params)
+    ap.add_argument("command")
+    options = ap()
+    if "command" in options.keys():
+        io.print_out(f'You should use "man {options["command"]}" instead')
+        access_man(options["command"])
+        return
     help_func()
 
 
 def access_version(params):
-    if len(params) > 0:
-        xsErrors.stdwarning(f"The command 'version' requires {colibri.Fore.CYAN}0{colibri.Fore.RESET} arguments!")
-
+    ap = ArgumentParser(params)
+    ap()
     version_func()
 
 
@@ -57,7 +60,6 @@ def access_restart(params):
     logger.dump()
 
     # CLOSED
-
     sys_opts.optionloader = sys_opts.OptionLoader()
     sys_logger_pkg.logger = sys_logger_pkg.Logger()
 

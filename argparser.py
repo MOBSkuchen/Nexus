@@ -4,7 +4,7 @@ import errors as xsErrors
 
 
 class ArgumentParser:
-    def __init__(self, args=None, trim=False, check=False):
+    def __init__(self, args=None, trim=False, check=False, name=None, docstring=None):
         """
         Initialize the parser
         (run using parser())
@@ -31,6 +31,8 @@ class ArgumentParser:
         self._failed = False
         self._pos_stack = []
         self._required = []
+        self.name = name
+        self.docstring = docstring
 
     def _check_inputs_correctness(self):
         dep_table = {}
@@ -119,9 +121,10 @@ class ArgumentParser:
             self._registered_args[name]['action']()
 
     def add_argument(self, name, calls: list[str] = None, input_: bool = False, exclusives: list[str] = None,
-                     action: callable = None, dependencies: list[str] = None, required: bool = False):
+                     action: callable = None, dependencies: list[str] = None, required: bool = False, docstring=None):
         """
         Add an argument
+        :param docstring:
         :param required:
         :param dependencies:
         Arguments required in order for this argument to be invoked
@@ -164,7 +167,3 @@ class ArgumentParser:
     @property
     def failed(self):
         return self._failed
-
-    def doc_gen(self):
-        for argument in self._registered_args:
-            print(argument)

@@ -42,6 +42,8 @@ def parse_inputs(inputs, _input):
 
 
 def create_interface():
+    from options import init_manualloader
+    # init_manualloader()
     while True:
         _input = io.input_gather()
         inputs = _input.split()
@@ -126,13 +128,6 @@ def bootstrap(pa):
     create_interface()
 
 
-def send_report(content):
-    from pam import NexusServerConnector
-    nsc = NexusServerConnector()
-    nsc.report(content)
-    del nsc
-
-
 def main(pa):
     try:
         bootstrap(pa)
@@ -154,7 +149,6 @@ def main(pa):
         name = tb.tb_frame.f_code.co_name
         _tb = ex.with_traceback(None)
         content = f'{colibri.Style.UNDERLINE}Internal error, please open an issue with the following traceback{colibri.Style.RESET_ALL} :\nIn {filename}::{name} [{lineno}]: \n{_tb}'
-        send_report(content)  # Send internal error report to Nexus-Server
         io.output(content)
         io.output('=' * len(str(_tb)))
 

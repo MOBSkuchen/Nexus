@@ -18,6 +18,7 @@ class Interpreter:
     def __init__(self, con):
         self.con = con
         self.pam = PackageManager()
+        self.man = PackageManager("manuals")
         self.pkg_size = 25000
         self._dt = datetime.datetime
 
@@ -38,6 +39,8 @@ class Interpreter:
                 self.send()
             case "4":
                 self.get_report()
+            case "5":
+                self.send_manual()
 
     def send(self):
         name = self.con.recv(100).decode()
@@ -89,6 +92,16 @@ class Interpreter:
                     sys.stdout.write('\rOK')
         self.con.recv(1)
         sys.stdout.write('\rDONE')
+
+    def send_manual(self):
+        name = self.con.recv(100).decode()  # Name
+        content = self.man.get_reader(name).read()
+        self.con.send(content)
+
+    def list_manuals(self):
+        pattern = self.con.recv(100).decode()
+        files = self.man.list(pattern)
+        self.con.send(";".join(files).encode())
 
 
 class Server:

@@ -45,12 +45,14 @@ class NexusServerConnector:
                         fix=["Check your internet connection",
                              "Update Nexus (PaM)"]
                         )
+        xsErrors.sys_exit(_.failed)
 
     def _server_refused(self):
         _.failed = 9
         xsErrors.stderr(9, msg="Server refused connection",
                         cause=["The Server currently does not expect/want a connection with you"],
                         fix=["Please wait a bit"])
+        xsErrors.sys_exit(_.failed)
 
     def _contact(self):
         try:
@@ -68,7 +70,23 @@ class NexusServerConnector:
         elif response == b'0':
             self._server_refused()
         else:
+            print(response)
+            print(response)
+            print(response)
             self._server_dead()
+
+    def get_manual(self, name):
+        self.connection.send(b'5')
+        self.connection.recv(1)
+        self.connection.send(name.encode())
+        return self.connection.recv(2048)
+
+    def list_manuals(self, pattern):
+        self.connection.send(b'6')
+        self.connection.recv(1)
+        self.connection.send(pattern.encode())
+        response = self.connection.recv(1024).decode().split(";")
+        return response
 
     def report(self, content: str):
         self.connection.send(b'4')
@@ -79,7 +97,7 @@ class NexusServerConnector:
         self.connection.send(b'1')
         self.connection.recv(1)
         self.connection.send(pattern.encode())
-        response = self.connection.recv(100).decode()
+        response = self.connection.recv(100).decode().split(";")
         return response
 
     def exists(self, name):
@@ -319,6 +337,16 @@ def argsparser(args):
 
     options = parser()
     return options
+
+
+def get_manual(name):
+    nsc = NexusServerConnector()
+    return nsc.get_manual(name)
+
+
+def list_manuals() -> list[str]:
+    nsc = NexusServerConnector()
+    return nsc.list_manuals("*")
 
 
 def _main(options):
