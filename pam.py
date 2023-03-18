@@ -315,7 +315,7 @@ def argsparser(args):
     parser.add_argument("local", calls=["-l", "--local"])
     parser.add_argument("custom", calls=["-c", "--custom"])
     parser.add_argument("output", calls=["-o", "--output"], input_=True)
-    parser.add_argument("custom_size", calls=["-s", "--custom-size"], input_=True)
+    parser.add_argument("size", calls=["-s", "--size"], input_=True)
 
     options = parser()
     return options
@@ -331,15 +331,15 @@ def _main(options):
         _.output = options["output"]
     if "custom" in options_l:
         _.custom = True
-    if "custom_size" in options_l:
+    if "size" in options_l:
         global pkg_size
         if not _.custom:
-            xsErrors.stderr(14, msg=f"Custom-Size may not be used on a Nexus-Package", cause=["Custom-Size invoked without custom"])
+            xsErrors.stderr(14, msg=f"Size may not be used on a Nexus-Package", cause=["Size invoked without custom"])
         else:
-            if not options["custom_size"].isnumeric():
-                xsErrors.stderr(14, msg=f"Invalid Custom-Size [{options['custom_size']}]", cause=["Custom-Size must be numeric"])
+            if not options["size"].isnumeric():
+                xsErrors.stderr(14, msg=f"Invalid Size [{options['size']}]", cause=["Size must be numeric"])
             else:
-                pkg_size = int(options["custom_size"])
+                pkg_size = int(options["size"])
     if "install" in options_l:
         tb = install(options["install"])
         if "unpack" in options_l and tb:

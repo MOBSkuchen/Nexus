@@ -16,7 +16,9 @@
     -c / --custom : Download from custom URL,
                     is intended to be used with
                     -o / --output. (Otherwise generates
-                    the filename by itself)
+                    the filename by itself).
+    -s / --size   : Custom download package size,
+                    for custom URLs.
 
     &underDescription&reset
     Nexus's Package manager. On default packages are downloaded
