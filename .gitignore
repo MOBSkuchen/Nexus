@@ -1,4 +1,4 @@
 .idea/
 __pycache__/
-ntllib/target/
-ntllib/.venv/
+ntllib_dev/target/
+ntllib_dev/.venv/
