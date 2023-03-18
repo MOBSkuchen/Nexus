@@ -1,6 +1,11 @@
 loaded = False
 
 
+def _import():
+    import ntllib
+    return ntllib
+
+
 def safe_import():
     global ntl, __version__, loaded
     if loaded:
@@ -9,7 +14,7 @@ def safe_import():
     import errors as xsErrors
 
     try:
-        import ntllib as ntl
+        ntl = _import()
         __version__ = ntl.version()
         loaded = True
     except Exception as ex:
@@ -24,7 +29,7 @@ def unsafe_import():
     global ntl, __version__, loaded
     if loaded:
         return
-    import ntllib as ntl
+    ntl = _import()
     __version__ = ntl.version()
     loaded = True
 

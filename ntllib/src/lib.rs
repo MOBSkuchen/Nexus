@@ -2,6 +2,8 @@ use std::fs;
 use pyo3::prelude::*;
 extern crate glob;
 use regex::Regex;
+extern crate levenshtein;
+use levenshtein::levenshtein;
 extern crate walkdir;
 use walkdir::WalkDir;
 
@@ -15,6 +17,11 @@ fn _filesize(path: String) -> usize {
     return x.len();
 }
 
+
+#[pyfunction]
+fn distance(s1: String, s2: String) -> PyResult<usize> {
+    Ok(levenshtein(s1.as_str(), s2.as_str()))
+}
 
 #[pyfunction]
 fn file_get(path: String) -> PyResult<Vec<u8>> {
@@ -101,7 +108,7 @@ fn rec_size(path: String) -> PyResult<usize> {
 
 #[pyfunction]
 fn version() -> PyResult<String> {
-    Ok("0.2.6".to_string())
+    Ok("0.3.0".to_string())
 }
 
 #[pymodule]
@@ -112,5 +119,6 @@ fn ntllib(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(rec_path_search, m)?)?;
     m.add_function(wrap_pyfunction!(file_get, m)?)?;
     m.add_function(wrap_pyfunction!(rec_size, m)?)?;
+    m.add_function(wrap_pyfunction!(distance, m)?)?;
     Ok(())
 }
