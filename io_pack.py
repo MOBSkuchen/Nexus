@@ -38,6 +38,9 @@ else:
     crit_err(21, "SupportError", msg=f"You OS is not currently supported by Nexus: {sys.platform}")
     sys.exit(21)
 
+if not os.path.exists(_utils.std_path):
+    os.mkdir(_utils.std_path)
+
 
 def title_screen():
     output(f"""
