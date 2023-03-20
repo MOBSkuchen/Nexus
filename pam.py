@@ -20,10 +20,11 @@ addr = ('suprime.sonvogel.com', 25583)
 
 
 class NexusServerConnector:
-    def __init__(self, _addr=addr, _pkg_size=pkg_size):
+    def __init__(self, _addr=addr, _pkg_size=pkg_size, _quiet=False):
         self.pkg_size = _pkg_size
         self.addr = _addr
         self.connection = socket.socket()
+        self.quiet = _quiet
         # self.connection.settimeout(0.5)
 
         # Protected members
@@ -61,12 +62,14 @@ class NexusServerConnector:
             self._server_dead()
             return
         _erase(1)
-        sys.stdout.write(
-            f'\r{colibri.Fore.LIGHTGREEN_EX}Connected to {colibri.Style.BRIGHT}Nexus-Server{colibri.Style.RESET_ALL}\n')
+        if not self.quiet:
+            sys.stdout.write(
+                f'\r{colibri.Fore.LIGHTGREEN_EX}Connected to {colibri.Style.BRIGHT}Nexus-Server{colibri.Style.RESET_ALL}\n')
         self.connection.send(b'0')
         response = self.connection.recv(1)
         if response == b'1':
-            _erase(1)
+            if not self.quiet:
+                _erase(1)
         elif response == b'0':
             self._server_refused()
         else:
@@ -349,14 +352,14 @@ def argsparser(args):
 
 
 def get_manual(name):
-    nsc = NexusServerConnector()
+    nsc = NexusServerConnector(_quiet=True)
     x = nsc.get_manual(name)
     reset()
     return x
 
 
 def list_manuals() -> list[str]:
-    nsc = NexusServerConnector()
+    nsc = NexusServerConnector(_quiet=True)
     x = nsc.list_manuals("*")
     reset()
     return x

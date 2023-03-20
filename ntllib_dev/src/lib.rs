@@ -23,6 +23,18 @@ fn distance(s1: String, s2: String) -> PyResult<usize> {
     Ok(levenshtein(s1.as_str(), s2.as_str()))
 }
 
+
+#[pyfunction]
+fn multi_distance(query: String, collection: Vec<String>, threshold: usize) -> PyResult<Vec<String>>  {
+    let mut ret_col: Vec<String> = Vec::new();
+    for it in collection {
+        if distance(query.to_owned(), it.to_owned()).unwrap() <= threshold  && (it.to_owned().len() >= threshold){
+            ret_col.push(it)
+        }
+    }
+    Ok(ret_col)
+}
+
 #[pyfunction]
 fn file_get(path: String) -> PyResult<Vec<u8>> {
     let empty: Vec<u8> = Vec::new();
@@ -108,7 +120,7 @@ fn rec_size(path: String) -> PyResult<usize> {
 
 #[pyfunction]
 fn version() -> PyResult<String> {
-    Ok("0.3.0".to_string())
+    Ok("0.3.4".to_string())
 }
 
 #[pymodule]
@@ -120,5 +132,6 @@ fn ntllib(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(file_get, m)?)?;
     m.add_function(wrap_pyfunction!(rec_size, m)?)?;
     m.add_function(wrap_pyfunction!(distance, m)?)?;
+    m.add_function(wrap_pyfunction!(multi_distance, m)?)?;
     Ok(())
 }

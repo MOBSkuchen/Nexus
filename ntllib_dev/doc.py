@@ -88,3 +88,18 @@ def distance(s1: str, s2: str) -> int:
     Levenshtein distance
     """
     pass
+
+
+def multi_distance(query: str, collection: list[str], threshold: int) -> list[str]:
+    """
+    Search for query in collection and return strings
+    :param query:
+    The string to be searched for
+    :param collection:
+    A collection of strings to be matched
+    :param threshold:
+    Minimum distance for return
+    :return:
+    A collection of strings => distance(query, item) >= threshold
+    """
+    pass

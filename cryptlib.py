@@ -21,4 +21,3 @@ class Crypto:
 
 	def decrypt(self, data):
 		return self.fernet.decrypt(data)
-

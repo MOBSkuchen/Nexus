@@ -2,6 +2,7 @@ import os
 import colibri
 from utils import std_path
 from datetime import datetime
+from options import optionloader
 
 
 class Logger:

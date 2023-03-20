@@ -10,13 +10,15 @@ from utils import std_path
 class OptionLoader:
     def __init__(self, path=std_path):
         self.path = path
-        self.directories = ["packages", "logs", "manuals"]
+        self.directories = ["packages", "logs", "manuals", "ext"]
 
         self.prt_ctx = None
 
         self.default_settings = {
             "show-curdir": True,
             "format-file": False,
+            "cmd-matching": True,
+            "cmd-threshold": 2
         }
 
         self.check_dirs()

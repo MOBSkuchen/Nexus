@@ -48,7 +48,7 @@ errorDict = {
 }
 
 
-def _errFormat(item, x):
+def errFormat(item, x):
     end = [item.pop(0)]
     for i in item:
         end.append(' ' * x + i)
@@ -63,9 +63,9 @@ def crit_err(num, name=None, msg=None, cause=None, fix=None, lc=True):
     io.output(
         f'{colibri.Fore.LIGHTRED_EX}{colibri.Style.BRIGHT}{name} {colibri.Style.RESET_ALL}: {colibri.Fore.RED}{msg}{colibri.Fore.RESET}')
     if cause:
-        io.output(f'{colibri.Style.BRIGHT}{colibri.Fore.RED}This error was caused by{colibri.Style.RESET_ALL} : {_errFormat(cause, 27)}')
+        io.output(f'{colibri.Style.BRIGHT}{colibri.Fore.RED}This error was caused by{colibri.Style.RESET_ALL} : {errFormat(cause, 27)}')
     if fix:
-        io.output(f'{colibri.Style.BRIGHT}{colibri.Fore.LIGHTGREEN_EX}This may fix it {colibri.Style.RESET_ALL}: {_errFormat(fix, 18)}')
+        io.output(f'{colibri.Style.BRIGHT}{colibri.Fore.LIGHTGREEN_EX}This may fix it {colibri.Style.RESET_ALL}: {errFormat(fix, 18)}')
     sys_exit(num, lc=lc)
 
 
@@ -77,9 +77,9 @@ def stderr(num, name=None, msg=None, cause=None, fix=None):
     io.output(
         f'{colibri.Fore.LIGHTRED_EX}{colibri.Style.BRIGHT}{name} {colibri.Style.RESET_ALL}: {colibri.Fore.RED}{msg}{colibri.Fore.RESET}')
     if cause:
-        io.output(f'{colibri.Style.BRIGHT}{colibri.Fore.RED}This error was caused by{colibri.Style.RESET_ALL} : {_errFormat(cause, 27)}')
+        io.output(f'{colibri.Style.BRIGHT}{colibri.Fore.RED}This error was caused by{colibri.Style.RESET_ALL} : {errFormat(cause, 27)}')
     if fix:
-        io.output(f'{colibri.Style.BRIGHT}{colibri.Fore.LIGHTGREEN_EX}This may fix it {colibri.Style.RESET_ALL}: {_errFormat(fix, 18)}')
+        io.output(f'{colibri.Style.BRIGHT}{colibri.Fore.LIGHTGREEN_EX}This may fix it {colibri.Style.RESET_ALL}: {errFormat(fix, 18)}')
 
 
 def internal_error(msg, num=-1, unexpected=True, crit=True):

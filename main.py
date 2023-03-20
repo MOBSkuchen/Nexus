@@ -1,6 +1,6 @@
 # Version is in utils.py
 import io_pack as io
-import ntl
+from ntl import ntl
 import errors as xsErrors
 import launcher
 import pam
@@ -13,32 +13,63 @@ import sys
 import paramiko
 import multiprocessing as mp
 
-ctx = None
 
-
-def command_not_found(*args):
-    use = ctx[7:]
+def command_not_found(use, *args, fix):
     tb = optionloader.try_launch(use, args)
     if tb == 0:
         xsErrors.stderr(15,
                         msg=f"This command does not exist {colibri.Fore.LIGHTBLACK_EX}({optionloader.prt_ctx}){colibri.Fore.RESET}")
+        if fix:
+            io.output(f'{colibri.Style.BRIGHT}{colibri.Fore.LIGHTGREEN_EX}Maybe you meant {colibri.Style.RESET_ALL}: {xsErrors.errFormat(fix, 18)}')
 
 
-def parse_inputs(inputs, _input):
+def execute_command(cmd, args):
+    cmds = [
+        "access_man",
+        "access_pam",
+        "access_cd",
+        "access_rem",
+        "access_rmdir",
+        "access_mkdir",
+        "access_size",
+        "access_restart",
+        "access_exit",
+        "access_sleep",
+        "access_purge",
+        "access_pex",
+        "access_ssh",
+        "access_genptkey",
+        "access_sftp",
+        "access_con",
+        "access_loc",
+        "access_ypp",
+        "access_ls"
+    ]
+    if cmd not in cmds:
+        if optionloader["cmd-matching"]:
+            fix = ntl.multi_distance(cmd[7:], cmds, optionloader["cmd-threshold"])
+        else:
+            fix = []
+        command_not_found(cmd, *args, fix=fix)
+    else:
+        func = getattr(xsCmds, cmd)
+        func(args)
+
+
+def parse_inputs(args, _input):
     global ctx
     if len(_input) == 0:
         return
     else:
-        if len(inputs) == 0:
+        if len(args) == 0:
             _adder = _input
-            inputs = []  # not necessary, lol
+            args = []  # not necessary, lol
         else:
-            _adder = inputs.pop(0)
+            _adder = args.pop(0)
         cmd = "access_" + _adder  # This is to protect other functions
         optionloader.prt_ctx = cmd[7:len(cmd)]
         ctx = cmd
-        func = getattr(xsCmds, cmd, command_not_found)
-        func(inputs)
+        execute_command(cmd, args)
 
 
 def create_interface():
@@ -73,6 +104,8 @@ def help_func():
     {colibri.Style.UNDERLINE}Startup Arguments{colibri.Style.RESET_ALL}
         {colibri.Fore.GREEN}-h{colibri.Style.RESET_ALL} / {colibri.Fore.GREEN}--help{colibri.Style.RESET_ALL}     : Show this help message
         {colibri.Fore.GREEN}-v{colibri.Style.RESET_ALL} / {colibri.Fore.GREEN}--version{colibri.Style.RESET_ALL}  : Get version
+        {colibri.Fore.GREEN}-q{colibri.Style.RESET_ALL} / {colibri.Fore.GREEN}--quiet{colibri.Style.RESET_ALL}    : Do not show title
+        {colibri.Fore.GREEN}-d{colibri.Style.RESET_ALL} / {colibri.Fore.GREEN}--debug{colibri.Style.RESET_ALL}    : Start in debug mode
     
     {colibri.Style.UNDERLINE}Commands{colibri.Style.RESET_ALL}
         {colibri.Fore.GREEN}pam{colibri.Style.RESET_ALL}       : PackageManager
