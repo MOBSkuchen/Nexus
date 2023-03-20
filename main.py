@@ -34,6 +34,7 @@ def execute_command(cmd, args):
         "access_size",
         "access_restart",
         "access_exit",
+        "access_version"
         "access_sleep",
         "access_purge",
         "access_pex",
