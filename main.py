@@ -1,6 +1,6 @@
 # Version is in utils.py
 import io_pack as io
-from ntl import ntl
+import ntl
 import errors as xsErrors
 import launcher
 import pam
@@ -34,7 +34,7 @@ def execute_command(cmd, args):
         "access_size",
         "access_restart",
         "access_exit",
-        "access_version"
+        "access_version",
         "access_sleep",
         "access_purge",
         "access_pex",
@@ -48,7 +48,7 @@ def execute_command(cmd, args):
     ]
     if cmd not in cmds:
         if optionloader["cmd-matching"]:
-            fix = ntl.multi_distance(cmd[7:], cmds, optionloader["cmd-threshold"])
+            fix = ntl.ntl.multi_distance(cmd[7:], cmds, optionloader["cmd-threshold"])
         else:
             fix = []
         command_not_found(cmd, *args, fix=fix)
