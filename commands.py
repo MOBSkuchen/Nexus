@@ -20,9 +20,16 @@ from launcher import main as launcher_main_trigger
 from shutil import rmtree
 
 
+def access_env(params):
+    ap = ArgumentParser(params)
+    ap.add_argument("operation", ["create", "load", "export"], positional=True)
+    opts = ap()
+    print(opts)
+
+
 def access_help(params):
     ap = ArgumentParser(params)
-    ap.add_argument("command")
+    ap.add_argument("command", positional=True)
     options = ap()
     if "command" in options.keys():
         io.print_out(f'You should use "man {options["command"]}" instead')

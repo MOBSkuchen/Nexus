@@ -51,7 +51,7 @@ def argparser(args):
         print(f'{colibri.Fore.BLUE}{colibri.Style.BRIGHT}Nexus-SSH{colibri.Style.RESET_ALL} : {colibri.Fore.MAGENTA}{__version__}{colibri.Fore.RESET}')
         print(f'{colibri.Fore.RED}Please pass in some arguments{colibri.Fore.RESET}')
         return
-    parser = ArgumentParser(args, trimmed=True)
+    parser = ArgumentParser(args)
     parser.add_argument(name='login-file', calls=['--login_file', '-lf'], input_=True)
     parser.add_argument(name='login', calls=['--login', '-l'], input_=True, dependencies=["server", "password"])
     parser.add_argument(name='password', calls=['--password', '-p'], input_=True, dependencies=["server", "login"])

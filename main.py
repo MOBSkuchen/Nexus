@@ -25,34 +25,41 @@ def command_not_found(use, *args, fix):
 
 def execute_command(cmd, args):
     cmds = [
-        "access_man",
-        "access_pam",
-        "access_cd",
-        "access_rem",
-        "access_rmdir",
-        "access_mkdir",
-        "access_size",
-        "access_restart",
-        "access_exit",
-        "access_version",
-        "access_sleep",
-        "access_purge",
-        "access_pex",
-        "access_ssh",
-        "access_genptkey",
-        "access_sftp",
-        "access_con",
-        "access_loc",
-        "access_ypp",
-        "access_ls"
+        "man",
+        "pam",
+        "cd",
+        "rem",
+        "rmdir",
+        "mkdir",
+        "size",
+        "restart",
+        "exit",
+        "version",
+        "sleep",
+        "help",
+        "purge",
+        "pex",
+        "ssh",
+        "genptkey",
+        "sftp",
+        "con",
+        "loc",
+        "ypp",
+        "ls"
     ]
+    if cmd.startswith("!"):
+        cmd = cmd[1:]
+        func = getattr(xsCmds, cmd)
+        func(args)
+        return
     if cmd not in cmds:
         if optionloader["cmd-matching"]:
-            fix = ntl.ntl.multi_distance(cmd[7:], cmds, optionloader["cmd-threshold"])
+            fix = ntl.ntl.multi_distance(cmd, cmds, optionloader["cmd-threshold"])
         else:
             fix = []
         command_not_found(cmd, *args, fix=fix)
     else:
+        cmd = "access_" + cmd
         func = getattr(xsCmds, cmd)
         func(args)
 
@@ -63,13 +70,10 @@ def parse_inputs(args, _input):
         return
     else:
         if len(args) == 0:
-            _adder = _input
-            args = []  # not necessary, lol
+            return
         else:
-            _adder = args.pop(0)
-        cmd = "access_" + _adder  # This is to protect other functions
-        optionloader.prt_ctx = cmd[7:len(cmd)]
-        ctx = cmd
+            cmd = args.pop(0)
+        optionloader.prt_ctx = cmd
         execute_command(cmd, args)
 
 

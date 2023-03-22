@@ -82,14 +82,20 @@ class ArgumentParser:
         return self._parsed_args
 
     def _parse_arg(self, value):
-        if (nn := self._r_arg) and not value.startswith('-'):
-            self._r_arg = None
-            self._parsed_args[nn] = value
+        if self._pos_stack:  # Pos-arg
+            name = self._pos_stack.pop(0)
+            print(self._registered_args[name]["calls"], name)
+            if self._registered_args[name]["calls"] and value not in self._registered_args[name]["calls"]:
+                self._failed = True
+                xsErrors.stderr(8, msg=f"Argument [{value}] is not in calls",
+                                cause=["This positional argument has a set list of values"],
+                                fix=["Try one of these :"] + self._registered_args[name]["calls"])
+            self._parsed_args[name] = value
             return
         if value not in self._call_map:
-            if self._pos_stack:  # Pos-arg
-                name = self._pos_stack.pop(0)
-                self._parsed_args[name] = value
+            if (nn := self._r_arg) and not value.startswith('-'):
+                self._r_arg = None
+                self._parsed_args[nn] = value
                 return
             self._failed = True
             xsErrors.stderr(8, msg=f"Argument [{value}] does not exist",
@@ -120,10 +126,11 @@ class ArgumentParser:
             self._registered_args[name]['action']()
 
     def add_argument(self, name, calls: list[str] = None, input_: bool = False, exclusives: list[str] = None,
-                     action: callable = None, dependencies: list[str] = None, required: bool = False):
+                     action: callable = None, dependencies: list[str] = None, required: bool = False,
+                     positional: bool = False):
         """
         Add an argument
-        :param docstring:
+        :param positional:
         :param required:
         :param dependencies:
         Arguments required in order for this argument to be invoked
@@ -148,6 +155,7 @@ class ArgumentParser:
             dependencies = []
         if calls is None:
             calls = []
+        if positional:
             self._pos_stack.append(name)
         if required:
             self._required.append(name)
