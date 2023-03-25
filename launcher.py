@@ -10,7 +10,7 @@ import io_pack as io
 from argparser import ArgumentParser
 
 
-__version__ = "1.6"
+__version__ = "1.7"
 
 
 reg = {}
@@ -92,25 +92,44 @@ __loaded_stb = """def main(args):
 
 def main(params):
     ap = ArgumentParser(params)
-    ap.add_argument("cached", ["-c", "--cached"], action=cached)
-    ap.add_argument("execute", ["-e", "--exe"], input_=True)
-    ap.add_argument("drop", ["-d", "--drop"], input_=True)
-    ap.add_argument("new", ["-n", "--new"], input_=True)
+    ap.add_argument("action",  ["new", "drop", "exe", "cached"], positional=True, required=True)
+    ap.add_argument("value", positional=True)
 
     p = ap()
-    if "new" in p.keys():
-        name = p["new"]
-        name = name + ".py" if not name.endswith(".py") else name
-        with open(name, 'w') as file:
-            file.write(__loaded_stb)
-        io.print_out(f'Created {name}')
-    if "drop" in p.keys():
-        name = p["drop"]
-        drop(name)
-    if "execute" in p.keys():
-        file = p["execute"]
-        io.print_out(f"{colibri.Style.UNDERLINE}Executing '{p['execute']}'{colibri.Style.RESET_ALL}")
-        py_launch(file,  [])
+    pk = list(p.keys())
+    match p["action"]:
+        case "cached":
+            cached()
+        case "new":
+            if "value" not in pk:
+                xsErrors.stderr(8, msg=f"Argument [action] requires an input",
+                                cause=["The argument requires an input, but the arguments end after this one"],
+                                fix=["Add a value behind this argument"])
+                return
+            name = p["value"]
+            name = name + ".py" if not name.endswith(".py") else name
+            with open(name, 'w') as file:
+                file.write(__loaded_stb)
+            io.print_out(f'Created {name}')
+        case "drop":
+            if "value" not in pk:
+                xsErrors.stderr(8, msg=f"Argument [action] requires an input",
+                                cause=["The argument requires an input, but the arguments end after this one"],
+                                fix=["Add a value behind this argument"])
+                return
+            name = p["value"]
+            name = name + ".py" if not name.endswith(".py") else name
+            drop(name)
+        case "exe":
+            if "value" not in pk:
+                xsErrors.stderr(8, msg=f"Argument [action] requires an input",
+                                cause=["The argument requires an input, but the arguments end after this one"],
+                                fix=["Add a value behind this argument"])
+                return
+            file = p["value"]
+            file = file + ".py" if not file.endswith(".py") else file
+            io.print_out(f"{colibri.Style.UNDERLINE}Executing '{p['value']}'{colibri.Style.RESET_ALL}")
+            py_launch(file, [])
 
 
 def py_launch(name, args):

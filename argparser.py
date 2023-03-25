@@ -81,10 +81,22 @@ class ArgumentParser:
             self._check_inputs_correctness()
         return self._parsed_args
 
+    def _inp_arg_parse(self, name):
+        if self._registered_args[name]['input']:
+            if len(self.args) == 0:
+                self._failed = True
+                xsErrors.stderr(8, msg=f"Argument [{name}] requires an input",
+                                cause=["The argument requires an input, but the arguments end after this one"],
+                                fix=["Add a value behind this argument"])
+                return False
+            self._r_arg = name
+        return True
+
     def _parse_arg(self, value):
         if self._pos_stack:  # Pos-arg
             name = self._pos_stack.pop(0)
-            print(self._registered_args[name]["calls"], name)
+            if not self._inp_arg_parse(name):
+                return
             if self._registered_args[name]["calls"] and value not in self._registered_args[name]["calls"]:
                 self._failed = True
                 xsErrors.stderr(8, msg=f"Argument [{value}] is not in calls",
@@ -111,15 +123,8 @@ class ArgumentParser:
                                 cause=["Both arguments were passed in while only one of them is allowed"],
                                 fix=["Only pass in one of them"])
                 return
-        if self._registered_args[name]['input']:
-            if len(self.args) == 0:
-                self._failed = True
-                xsErrors.stderr(8, msg=f"Argument [{name}] requires an input",
-                                cause=["The argument requires an input, but the arguments end after this one"],
-                                fix=["Add a value behind this argument"])
-                return
-            self._r_arg = name
-
+        if not self._inp_arg_parse(name):
+            return
         self._parsed_args[name] = True
 
         if self._registered_args[name]['action']:
